@@ -57,7 +57,7 @@ create_db() {
 	FLUSH PRIVILEGES;
 sql"
 	if [[ $? -eq 0 ]] ; then
-		echo "Db User $dbuser: $db_pass" >> $DATA_DIR/credentials.txt
+		echo "Db User $dbuser: $db_pass" >> "$DATA_DIR/credentials.txt"
 		cat <<-.
 		User successfully created!
 		password for $dbuser: $db_pass
@@ -75,8 +75,8 @@ backup_db() {
 	    case $arg in
 	        -n|--name) database=$1 ; shift;;
 	        --name=*) database=${arg#*=};;
-			-o|--outfile) outputfile=$1 ; shift;;
-			--outfile=*) outputfile=${arg#*=} ; outputfile="${outputfile/#\~/$HOME}";;
+			-o|--outfile) outputfile="$1" ; shift;;
+			--outfile=*) outputfile="${arg#*=}" ; outputfile="${outputfile/#\~/$HOME}";;
 	        *) echo "Unknown argument: $arg" ; exit 1;;
 	    esac
 	done
@@ -96,13 +96,13 @@ backup_db() {
 		.
 		die
 	fi
-	if [[ -z $outputfile ]]; then
+	if [[ -z "$outputfile" ]]; then
 		outputfile="$DATA_DIR/db-backups/$(date +%Y-%m-%d_%H:%M:%S)-${database}-backup.sql"
 	fi
 
 	read -sp 'Database Password: ' db_pass
 	echo -e "\nbacking up...."
-	ssh -t $user@$ip "mysqldump -p${db_pass} ${database} 2>/dev/null" > $outputfile
+	ssh -t $user@$ip "mysqldump -p${db_pass} ${database} 2>/dev/null" > "$outputfile"
 	echo
 	echo "$outputfile created!"
 }
